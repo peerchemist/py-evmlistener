@@ -61,29 +61,3 @@ def decode_data(data: str) -> str:
     print(f"Decoded Data: {decoded_data}")
 
     return decoded_data
-
-
-"""
-async with aiohttp.ClientSession() as session:
-    async with session.post(rpc_address, json=rpc_request) as response:
-        if response.status == 200:
-            response_json = await response.json()
-            if "error" in response_json:
-                error_code = response_json["error"]["code"]
-                error_message = response_json["error"]["message"]
-                print(f"Error: {error_code}, {error_message}")
-            else:
-                logs = response_json.get("result", [])
-                for log in logs:
-                    print("Log found:")
-                    print(f"Address: {log['address']}")
-                    print(f"Data: {log['data']}")
-                    print(f"Topics: {log['topics']}")
-
-                    # Decode the data
-                    data = log["data"]
-                    decode_data(data)
-
-        else:
-            print(f"HTTP Error: {response.status}, {await response.text()}")
-"""
