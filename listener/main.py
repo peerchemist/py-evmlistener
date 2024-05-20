@@ -57,8 +57,6 @@ async def post_request(session, rpc_url, rpc_request):
 
 
 async def handle_event(event, explorer_url: str) -> None:
-    print(event)
-
     event_data = decode_data(event["data"])
 
     burn = BurnEvent(
