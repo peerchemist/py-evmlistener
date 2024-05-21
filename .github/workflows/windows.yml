@@ -1,0 +1,45 @@
+name: Build Windows Distributable
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+
+    - name: Install Poetry
+      run: |
+        (Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | python -
+
+    - name: Add Poetry to PATH
+      run: echo "C:\Users\runneradmin\AppData\Roaming\Python\Scripts" >> $env:GITHUB_PATH
+
+    - name: Install project dependencies
+      run: poetry install
+
+    - name: Install PyInstaller
+      run: poetry add pyinstaller
+
+    - name: Build with PyInstaller
+      run: |
+        poetry run pyinstaller --name pyevmlistener --console --distpath dist listener/main.py
+
+    - name: Upload distributable
+      uses: actions/upload-artifact@v3
+      with:
+        name: py-evmlistener
+        path: dist/main.exe
