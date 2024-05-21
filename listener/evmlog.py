@@ -1,4 +1,5 @@
 import re
+import time
 from eth_utils import keccak
 from eth_abi import decode
 from typing import Union
@@ -49,7 +50,7 @@ def prepare_burned_filter_rpc_request(
         "jsonrpc": "2.0",
         "method": "eth_getLogs",
         "params": [filter_params],
-        "id": 1,
+        "id": int(time.time()),
     }
 
     return rpc_request
