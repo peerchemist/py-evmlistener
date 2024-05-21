@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "py-evmlistener"
-version = "1.0"
+version = "1.1"
 description = "EVM event log listener deamon."
 authors = ["Peerchemist <peerchemist@protonmail.ch>"]
 readme = "README.md"
 packages = [{ include = "listener" }]
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = "3.12.3"
 asyncio = "^3.4.3"
 picologging = "^0.9.3"
 aiosqlite = "^0.20.0"
@@ -15,9 +15,8 @@ aiohttp = "^3.9.5"
 eth-utils = "^4.1.1"
 eth-abi = "^5.1.0"
 
-
 [tool.poetry.group.dev.dependencies]
-nuitka = { git = "https://github.com/Nuitka/Nuitka/", rev = "08670ba200ac3059babe1f363e8f6f1d9a5fe66a" }
+pyinstaller = "^6.6.0"
 
 [build-system]
 requires = ["poetry-core"]
