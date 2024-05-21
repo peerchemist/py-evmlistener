@@ -30,12 +30,21 @@ class RPCConfig:
     url: str
     key: str
 
+    def __str__(self) -> str:
+        return f"RPCConfig(url={self.url}, key={self.key})"
+
 
 @dataclass
 class ContractConfig:
     address: str
     from_block_height: int
     events: list
+
+    def __str__(self) -> str:
+        return (
+            f"ContractConfig(address={self.address}, from_block_height={self.from_block_height}, "
+            f"events={self.events})"
+        )
 
 
 @dataclass
@@ -45,6 +54,12 @@ class NetworkConfig:
     rpc: RPCConfig
     contract: ContractConfig
     explorer_url: str
+
+    def __str__(self) -> str:
+        return (
+            f"NetworkConfig(name={self.name}, network_id={self.network_id}, rpc={self.rpc}, "
+            f"contract={self.contract}, explorer_url={self.explorer_url})"
+        )
 
 
 @dataclass(frozen=True)
@@ -73,3 +88,7 @@ class DeployedConfig:
                     )
                 )
             return cls(deployed=deployed_networks)
+
+    def __str__(self) -> str:
+        deployed_str = ", ".join(str(network) for network in self.deployed)
+        return f"DeployedConfig(deployed=[{deployed_str}])"
