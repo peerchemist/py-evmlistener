@@ -41,6 +41,7 @@ logger.addHandler(stdout_handler)
 
 async def post_request(session, rpc_url, rpc_request):
     async with session.post(rpc_url, json=rpc_request) as response:
+        logger.info(f"Sending a rpc request: {rpc_request} to URL {rpc_url}.")
         if response.status == 200:
             response_json = await response.json()
             if "error" in response_json:
@@ -67,7 +68,7 @@ async def handle_event(event, explorer_url: str) -> None:
         txid=event["transactionHash"],
     )
     print(burn)
-    logger.info("Found a burn event.")
+    logger.info(f"Found a burn event. {burn}")
 
     formatted_message = format_burn_event_message(burn, explorer_url)
 
@@ -84,7 +85,9 @@ async def task_with_retry(task_func, max_retries: int, *args, **kwargs) -> Await
         try:
             return await task_func(*args, **kwargs)
         except Exception as e:
-            print(f"Task failed with {e}, retrying... {attempt + 1}/{max_retries}")
+            logger.error(
+                f"Task failed with {e}, retrying... {attempt + 1}/{max_retries}"
+            )
             await asyncio.sleep(5)  # wait a bit before retrying
     raise Exception("Task failed after max retries")
 
@@ -106,6 +109,10 @@ async def fetch_new_log_entries(
 async def create_log_monitoring_task(
     session: aiohttp.ClientSession, from_block: int, config: NetworkConfig
 ) -> list[Awaitable]:
+    logger.info(
+        f"Creating a task for network: {config.network_id}, for contract: {config.contract.address}, since block {from_block}."
+    )
+
     rpc_request = prepare_burned_filter_rpc_request(
         config.contract.address, config.contract.events[0], from_block, "finalized"
     )
@@ -132,6 +139,8 @@ async def main_loop() -> None:
 
     async with aiohttp.ClientSession() as session:
         for network_config in DeployedConfig.deployed:
+            logger.info(f"Setting a task for {network_config}.")
+
             await ensure_contract_record_exists_in_db(
                 db=database,
                 contract=network_config.contract.address,
@@ -147,6 +156,8 @@ async def main_loop() -> None:
                         database, network_config.contract.address
                     )
 
+                    logger.info(f"Last recorded block is {last_recorded_block}.")
+
                     # Get the current block number
                     response, error = await post_request(
                         session,
@@ -156,10 +167,10 @@ async def main_loop() -> None:
                     if response:
                         current_block_number = int(str(response), 16)
                     else:
-                        print("Unable to get current block number, going off.")
+                        logger.error("Unable to get current block number, exiting.")
                         sys.exit()
 
-                    print("Current block is: ", current_block_number)
+                    logger.info(f"Current block is: {current_block_number}")
 
                     # spawn tasks
                     task_list = await create_log_monitoring_task(
