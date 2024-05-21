@@ -36,7 +36,7 @@ jobs:
 
     - name: Build with PyInstaller
       run: |
-        poetry run pyinstaller --name pyevmlistener --console --distpath dist listener/main.py
+        poetry run pyinstaller --name pyevmlistener --onefile --console --distpath dist listener/main.py
 
     - name: Upload distributable
       uses: actions/upload-artifact@v4
