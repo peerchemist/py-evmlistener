@@ -61,7 +61,7 @@ async def handle_event(event, explorer_url: str) -> None:
 
     burn = BurnEvent(
         who=event["address"],
-        amount=event_data[0],
+        amount=int(event_data[0]),
         unwrap_address=event_data[1],
         block_number=int(str(event["blockNumber"]), 16),
         txid=event["transactionHash"],
