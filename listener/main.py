@@ -129,76 +129,78 @@ async def create_log_monitoring_task(
     ]
 
 
-async def main_loop() -> None:
-    database: Connection = await db_connection(Configuration)
-    logger.info("Connected to the database.")
-    # check if table exists and create it if not
-    await create_table_if_not_exists(database)
+async def monitor_network(session, database, network_config):
+    logger.info(f"Setting a task for {network_config}.")
+    await ensure_contract_record_exists_in_db(
+        db=database,
+        contract=network_config.contract.address,
+        block_height=network_config.contract.from_block_height,
+        network_id=network_config.network_id,
+    )
 
-    logger.info("Entering the main loop.")
-
-    async with aiohttp.ClientSession() as session:
-        for network_config in DeployedConfig.deployed:
-            logger.info(f"Setting a task for {network_config}.")
-
-            await ensure_contract_record_exists_in_db(
-                db=database,
-                contract=network_config.contract.address,
-                block_height=network_config.contract.from_block_height,
-                network_id=network_config.network_id,
+    try:
+        while True:
+            # last seen block number
+            last_recorded_block = await get_block_height(
+                database, network_config.contract.address
             )
 
-            try:
-                while True:
-                    logger.info("Entering the main loop...")
-                    # last seen block number
-                    last_recorded_block = await get_block_height(
-                        database, network_config.contract.address
-                    )
+            logger.info(f"Last recorded block is {last_recorded_block}.")
 
-                    logger.info(f"Last recorded block is {last_recorded_block}.")
+            # Get the current block number
+            response, error = await post_request(
+                session,
+                network_config.rpc.url,
+                prepare_latest_block_number_rpc(),
+            )
+            if response:
+                current_block_number = int(str(response), 16)
+            else:
+                logger.error("Unable to get current block number, exiting.")
+                sys.exit()
 
-                    # Get the current block number
-                    response, error = await post_request(
-                        session,
-                        network_config.rpc.url,
-                        prepare_latest_block_number_rpc(),
-                    )
-                    if response:
-                        current_block_number = int(str(response), 16)
-                    else:
-                        logger.error("Unable to get current block number, exiting.")
-                        sys.exit()
+            logger.info(f"Current block is: {current_block_number}")
 
-                    logger.info(f"Current block is: {current_block_number}")
+            # spawn tasks
+            task_list = await create_log_monitoring_task(
+                session=session,
+                from_block=last_recorded_block,
+                config=network_config,
+            )
 
-                    # spawn tasks
-                    task_list = await create_log_monitoring_task(
-                        session=session,
-                        from_block=last_recorded_block,
-                        config=network_config,
-                    )
+            # run tasks
+            results = await asyncio.gather(*task_list, return_exceptions=True)
 
-                    # run tasks
-                    results = await asyncio.gather(*task_list, return_exceptions=True)
+            # save the block number to cache file
+            await update_block_height(
+                database, network_config.contract.address, current_block_number
+            )
 
-                    # save the block number to cache file
-                    await update_block_height(
-                        database, network_config.contract.address, current_block_number
-                    )
+            for result in results:
+                if isinstance(result, Exception):
+                    logger.error(f"Task ended with error: {result}")
 
-                    for result in results:
-                        if isinstance(result, Exception):
-                            print(f"Task ended with error: {result}")
+            # finished the cycle, go to sleep
+            logger.info("Going to sleep.")
+            await asyncio.sleep(int(Configuration.loop_timeout))
 
-                    # finished the cycle, go to sleep
-                    print("Going to sleep.")
-                    await asyncio.sleep(int(Configuration.loop_timeout))
-
-            except KeyboardInterrupt:
-                print("\nGracefully exiting...")
-                await database.close()
-                await session.close()
+    except KeyboardInterrupt:
+        logger.info("\nGracefully exiting...")
+        await database.close()
+        await session.close()
 
 
-asyncio.run(main_loop())
+async def main():
+    async with aiohttp.ClientSession() as session:
+        database: Connection = await db_connection(Configuration)
+        logger.info("Connected to the database.")
+        # check if table exists and create it if not
+        await create_table_if_not_exists(database)
+        tasks = [
+            monitor_network(session, database, network_config)
+            for network_config in DeployedConfig.deployed
+        ]
+        await asyncio.gather(*tasks)
+
+
+asyncio.run(main())
