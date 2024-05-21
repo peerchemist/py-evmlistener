@@ -39,7 +39,7 @@ jobs:
         poetry run pyinstaller --name pyevmlistener --console --distpath dist listener/main.py
 
     - name: Upload distributable
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: py-evmlistener
-        path: dist/main.exe
+        path: dist/pyevmlistener.exe
