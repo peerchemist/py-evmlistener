@@ -11,7 +11,7 @@ Write a configuration like this in the `conf.toml` file.
 
 ```
 [Config]
-db_name = "wrapservice"
+db_name = "db.sqlite"
 loop_timeout = 1200     # 20 minutes of pause between loops
 tg_bot_token = ""       # Telegram bot token
 chat_id = "-"           # Channel in which the bot will post notifications
@@ -36,3 +36,10 @@ events = [
 ] # [WPPCBurned] List of events
 from_block_height = 19904399
 ```
+
+## Telegram stuff
+
+To create a new Telegram bot, start by messaging `@BotFather` on Telegram and following the prompts to create a bot and obtain a token.
+Next, to add the bot to a channel or group, open the channel or group, go to "Manage Channel/Group," select "Administrators," and add your bot.
+Finally, to find the Telegram channel ID, forward a message from the channel to `@userinfobot` or `@username_to_id_bot`, which will respond with the channel ID.
+Alternatively, you can open web.telegram.org and observe the channel ID in the URL.
