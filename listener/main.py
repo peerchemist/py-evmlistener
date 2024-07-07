@@ -126,7 +126,7 @@ async def create_log_monitoring_task(
             session,
             config.rpc.url,
             rpc_request,
-            config.network_name,
+            config.name,
             config.explorer_url,
         )
     ]
