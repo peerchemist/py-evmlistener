@@ -17,6 +17,7 @@ b = BurnEvent(
     unwrap_address="PMr2Syadd5t1LfZvtAxwQEtQNKpyXTNVtX",
     block_number=199999,
     txid="0xc4ba8b1df526f5ce524d0a4d8e37a4a37181345159eea9b4cbfe3f3a2b317604",
+    network_name="EthereumMainnet",
 )
 
 # Example usage:

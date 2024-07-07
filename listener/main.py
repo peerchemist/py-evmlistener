@@ -57,7 +57,7 @@ async def post_request(session, rpc_url, rpc_request):
             return None, error_message
 
 
-async def handle_event(event, explorer_url: str) -> None:
+async def handle_event(event, network_name: str, explorer_url: str) -> None:
     event_data = decode_data(event["data"])
 
     burn = BurnEvent(
@@ -66,6 +66,7 @@ async def handle_event(event, explorer_url: str) -> None:
         unwrap_address=event_data[1],
         block_number=int(str(event["blockNumber"]), 16),
         txid=event["transactionHash"],
+        network_name=network_name,
     )
     print(burn)
     logger.info(f"Found a burn event. {burn}")
@@ -96,12 +97,13 @@ async def fetch_new_log_entries(
     session: aiohttp.ClientSession,
     rpc_url: str,
     rpc_request: dict,
+    network_name: str,
     explorer_url: str,
 ):
     events, error = await post_request(session, rpc_url, rpc_request)
     if events:
         for ev in events:
-            await handle_event(ev, explorer_url)
+            await handle_event(ev, network_name, explorer_url)
     else:
         pass
 
@@ -124,6 +126,7 @@ async def create_log_monitoring_task(
             session,
             config.rpc.url,
             rpc_request,
+            config.network_name,
             config.explorer_url,
         )
     ]
