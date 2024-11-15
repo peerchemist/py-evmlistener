@@ -3,7 +3,7 @@ import asyncio
 import aiohttp
 from typing import Awaitable
 from aiosqlite import Connection
-import picologging as logging
+import logging
 from listener.config import AppConfig, NetworkConfig, DeployedConfig
 from listener.db import (
     db_connection,

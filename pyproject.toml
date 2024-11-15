@@ -1,15 +1,14 @@
 [tool.poetry]
 name = "py-evmlistener"
-version = "1.1"
+version = "1.2"
 description = "EVM event log listener deamon."
 authors = ["Peerchemist <peerchemist@protonmail.ch>"]
 readme = "README.md"
 packages = [{ include = "listener" }]
 
 [tool.poetry.dependencies]
-python = ">=3.12.1,<3.13"
+python = ">=3.12,<3.14"
 asyncio = "^3.4.3"
-picologging = "^0.9.3"
 aiosqlite = "^0.20.0"
 aiohttp = "^3.9.5"
 eth-utils = "^4.1.1"
