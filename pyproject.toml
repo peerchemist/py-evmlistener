@@ -3,7 +3,6 @@ name = "py-evmlistener"
 version = "1.2"
 description = "EVM event log listener deamon."
 authors = ["Peerchemist <peerchemist@protonmail.ch>"]
-readme = "README.md"
 packages = [{ include = "listener" }]
 
 [tool.poetry.dependencies]
